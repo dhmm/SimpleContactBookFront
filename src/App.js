@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import './App.css';
 var unirest = require('unirest');
 
+
 const API_KEY = 'A0123456789';
 const API_PORT = '8000';
 const API_URL = 'http://localhost:'+API_PORT+'/';
@@ -15,7 +16,7 @@ class Login extends Component {
       userName : null,
       password : null
     }
-
+    
     this.login = () => {  
           unirest.post(
             API_URL + 'login/'
@@ -76,6 +77,7 @@ class Login extends Component {
     );
   }
 }
+
 class App extends Component {
   constructor(props)
   {
@@ -97,10 +99,27 @@ class App extends Component {
           userName : userName,
           accessToken : token,        
         });
+
+        localStorage.setItem('userId' , userId);
+        localStorage.setItem('userName' , userName);
+        localStorage.setItem('accessToken' , token);
       }
     }
+
+    this.loadLocalStorage = () => {
+        this.setState({
+          userId: localStorage.getItem('userId'),
+          userName : localStorage.getItem('userName'),
+          accessToken : localStorage.getItem('accessToken')
+        });
+    }
   }
-  render() {
+
+  componentWillMount(nextProps, nextState) {
+    this.loadLocalStorage();
+  }
+
+  render() {    
     if(this.isLoggedIn() === false) {
       return (
         <div className="App">
