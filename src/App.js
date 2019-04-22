@@ -80,7 +80,44 @@ class Login extends Component {
   }
 }
 class Contacts extends Component {
+  constructor(props) {
+    super(props);  
+    this.state = {
+      userId : props.userId,
+      token : props.token,
+      contacts : []
+    }   
+    this.loadAll = () => {      
+        unirest.get(
+          API_URL + 'contacts/'+this.state.userId
+        )        
+        .headers({                      
+          'api-key' : API_KEY,
+          'userid' : this.state.userId,
+          'token' : this.state.token
+        })       
+        .end( (response) => {                        
+          var responseData = JSON.parse(response.body);               
+          if(responseData.error === true) {
+            alert(responseData.message);
+          } else {  
+            this.setState({
+              contacts : responseData.data.contacts
+            })
+          }
+        })
+    }
+  }
   render() {
+    this.loadAll();    
+    var contactItems = this.state.contacts.map( (contact) => 
+      <tr>
+        <td>{contact.surname}</td>
+        <td>{contact.name}</td>
+        <td>{contact.phone}</td>
+      </tr>
+    );
+    
     return(
       <div className="row">
         <div className="col-md-2"></div>
@@ -93,12 +130,8 @@ class Contacts extends Component {
               <th>Phone</th>
             </tr>
           </thead>
-          <tbody>
-            <tr>
-              <td>John</td>
-              <td>Doe</td>
-              <td>john@example.com</td>
-            </tr>
+          <tbody>            
+            {contactItems}
             </tbody>
           </table>
         </div>
@@ -107,9 +140,9 @@ class Contacts extends Component {
     );
   }  
 }
+
 class Panel extends Component {
-  constructor(props)
-  {
+  constructor(props) {
     super(props);  
     this.state = {
       userId : props.userId,
@@ -175,8 +208,8 @@ class Panel extends Component {
             </form>
           </div>
         </nav>
-        <div>
-          <Contacts/>         
+        <div>          
+          <Contacts userId={this.state.userId} token={this.state.token}/>         
         </div>
       </div>
     )
