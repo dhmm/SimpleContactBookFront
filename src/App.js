@@ -108,14 +108,22 @@ class Contacts extends Component {
         })
     }
 
+    this.refreshContacts = ()=> {
+      this.setState({
+        contacts : []
+      });
+      this.loadAll();
+    }
+
     this.loadAll();
   }
-  render() {  
+  render() {      
     var contactItems = this.state.contacts.map( (contact) => 
       <tr>
         <td>{contact.surname}</td>
         <td>{contact.name}</td>
         <td>{contact.phone}</td>
+        <td><DeleteContact userId={this.state.userId} token={this.state.token} contactId={contact.contact_id} refreshContacts={this.refreshContacts}/></td>
       </tr>
     );
     
@@ -129,6 +137,7 @@ class Contacts extends Component {
               <th>Surname</th>
               <th>Name</th>
               <th>Phone</th>
+              <th>Actions</th>
             </tr>
           </thead>
           <tbody>            
@@ -185,7 +194,7 @@ class AddContact extends Component {
             surname: null,
             name:null,
             phone:null
-          });
+          });          
         }
       })
     }
@@ -208,11 +217,48 @@ class AddContact extends Component {
             <label htmlFor="phone">Phone :</label>
             <input type="phone" className="form-control" id="phone"  onChange={evt => this.setPhone(evt)}></input>
           </div>
-          <button type="button" class="btn btn-primary" onClick={evt=> this.createContact()}>Create</button>
+          <button type="button" className="btn btn-primary" onClick={evt=> this.createContact()}>Create</button>
         </form> 
         </div>
         <div className="col-md-2"></div>
       </div> 
+    );
+  } 
+}
+class DeleteContact extends Component {
+  
+  constructor(props) {
+    super(props);  
+    this.state = {
+      userId : props.userId,
+      token : props.token,            
+      contactId : props.contactId,      
+    }  
+  
+    this.deleteContact = () => {          
+      if(window.confirm('Are you sure ')) {     
+        unirest.delete(
+          API_URL + 'contacts/'+this.state.contactId
+        )        
+        .headers({                      
+          'api-key' : API_KEY,
+          'userid' : this.state.userId,
+          'token' : this.state.token
+        })              
+        .end( (response) => {                        
+          var responseData = JSON.parse(response.body);               
+          if(responseData.error === true) {
+            alert(responseData.message);
+          } else {
+            this.props.refreshContacts();
+          }
+        })
+      }
+    }
+  }
+  render() {      
+    return(
+      <div style={{cursor:'pointer'}} className="btn btn-sm btn-danger" onClick={evt=> this.deleteContact()}>Delete</div>      
     );
   } 
 }
