@@ -1,11 +1,14 @@
 import React, { Component } from 'react';
 import './App.css';
+import { Router , Link } from "@reach/router";
+
 var unirest = require('unirest');
 
 
 const API_KEY = 'A0123456789';
 const API_PORT = '8000';
 const API_URL = 'http://localhost:'+API_PORT+'/';
+
 
 class Login extends Component {
   
@@ -76,7 +79,34 @@ class Login extends Component {
     );
   }
 }
-
+class Contacts extends Component {
+  render() {
+    return(
+      <div className="row">
+        <div className="col-md-2"></div>
+        <div className="col-md-8">
+          <table className = "table">
+          <thead>
+            <tr>
+              <th>Surname</th>
+              <th>Name</th>
+              <th>Phone</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>John</td>
+              <td>Doe</td>
+              <td>john@example.com</td>
+            </tr>
+            </tbody>
+          </table>
+        </div>
+        <div className="col-md-2"></div>
+      </div> 
+    );
+  }  
+}
 class Panel extends Component {
   constructor(props)
   {
@@ -110,30 +140,31 @@ class Panel extends Component {
     return (
       <div>
         <nav className="navbar navbar-expand-lg navbar-light bg-light">
-          <a className="navbar-brand">CB</a>
+          <label className="navbar-brand">CB</label>
           <button className="navbar-toggler" type="button" data-toggle="collapse" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
             <span className="navbar-toggler-icon"></span>
           </button>
 
           <div className="collapse navbar-collapse" id="navbarSupportedContent">
             <ul className="navbar-nav mr-auto">
-              <li className="nav-item active">
-                <a className="nav-link">Home <span className="sr-only">(current)</span></a>
-              </li>
-              <li className="nav-item">
-                <a className="nav-link">Link</a>
-              </li>
               <li className="nav-item dropdown">
-                <a className="nav-link dropdown-toggle" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                  Dropdown
+                <a className="nav-link dropdown-toggle" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style={{cursor:'pointer'}} >
+                  Contacts
                 </a>
                 <div className="dropdown-menu" aria-labelledby="navbarDropdown">
-                  <a className="dropdown-item" >Action</a>
-                  <a className="dropdown-item" >Another action</a>
-                  <div className="dropdown-divider"></div>
-                  <a className="dropdown-item" >Something else here</a>
+                  <a className="dropdown-item" style={{cursor:'pointer'}}  >View contacts</a>
+                  <a className="dropdown-item" style={{cursor:'pointer'}}  >New contact</a>                  
                 </div>
               </li>
+              <li className="nav-item dropdown">
+                <a className="nav-link dropdown-toggle" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style={{cursor:'pointer'}} >
+                  Users
+                </a>
+                <div className="dropdown-menu" aria-labelledby="navbarDropdown">
+                  <a className="dropdown-item" style={{cursor:'pointer'}}  >View users</a>
+                  <a className="dropdown-item" style={{cursor:'pointer'}}  >New user</a>                  
+                </div>
+              </li>              
               <li className="nav-item">
                 <a className="nav-link" style={{cursor:'pointer'}} onClick={this.logout}>Logout</a>
               </li>
@@ -144,6 +175,9 @@ class Panel extends Component {
             </form>
           </div>
         </nav>
+        <div>
+          <Contacts/>         
+        </div>
       </div>
     )
   }
