@@ -96,7 +96,7 @@ class Contacts extends Component {
           'userid' : this.state.userId,
           'token' : this.state.token
         })       
-        .end( (response) => {                        
+        .end( (response) => {                                
           var responseData = JSON.parse(response.body);               
           if(responseData.error === true) {
             alert(responseData.message);
@@ -107,9 +107,10 @@ class Contacts extends Component {
           }
         })
     }
+
+    this.loadAll();
   }
-  render() {
-    this.loadAll();    
+  render() {  
     var contactItems = this.state.contacts.map( (contact) => 
       <tr>
         <td>{contact.surname}</td>
@@ -140,15 +141,102 @@ class Contacts extends Component {
     );
   }  
 }
+class AddContact extends Component {
 
+  constructor(props) {
+    super(props);  
+    this.state = {
+      userId : props.userId,
+      token : props.token,
+            
+      surname : null,
+      name : null,
+      phone : null,
+    }  
+    
+    this.setSurname = (evt) => {
+      this.setState ({ surname: evt.target.value });
+    }
+    this.setName = (evt) => {
+      this.setState ({ name: evt.target.value });
+    }
+    this.setPhone = (evt) => {
+      this.setState ({ phone: evt.target.value });
+    }
+
+    this.createContact = () => {      
+      unirest.post(
+        API_URL + 'contacts/'
+      )        
+      .headers({                      
+        'api-key' : API_KEY,
+        'userid' : this.state.userId,
+        'token' : this.state.token
+      })     
+      .field('surname', this.state.surname)
+      .field('name' , this.state.name)                
+      .field('phone' , this.state.phone)            
+      .end( (response) => {                        
+        var responseData = JSON.parse(response.body);               
+        if(responseData.error === true) {
+          alert(responseData.message);
+        } else {
+          this.setState({
+            surname: null,
+            name:null,
+            phone:null
+          });
+        }
+      })
+    }
+  }
+  render() {      
+    return(
+      <div className="row">
+        <div className="col-md-2"></div>
+        <div className="col-md-4">
+        <form>
+          <div className="form-group">
+            <label htmlFor="surname">Surname :</label>
+            <input type="surname" className="form-control" id="surname" onChange={evt => this.setSurname(evt)}></input>
+          </div>
+          <div className="form-group">
+            <label htmlFor="name">Name :</label>
+            <input type="name" className="form-control" id="name"  onChange={evt => this.setName(evt)}></input>
+          </div>
+          <div className="form-group">
+            <label htmlFor="phone">Phone :</label>
+            <input type="phone" className="form-control" id="phone"  onChange={evt => this.setPhone(evt)}></input>
+          </div>
+          <button type="button" class="btn btn-primary" onClick={evt=> this.createContact()}>Create</button>
+        </form> 
+        </div>
+        <div className="col-md-2"></div>
+      </div> 
+    );
+  } 
+}
 class Panel extends Component {
   constructor(props) {
     super(props);  
     this.state = {
       userId : props.userId,
-      token : props.token
+      token : props.token,
+
+      activePage : 'contacts'
     }
 
+    this.activateContacts = () => {
+      this.setState({
+        activePage : 'contacts'
+      });
+    }
+    this.activateAddContact = () => {
+      this.setState({
+        activePage : 'add_contact'
+      });
+    }
+    
     this.logout = () => {
         unirest.get(
           API_URL + 'logout/'
@@ -170,6 +258,17 @@ class Panel extends Component {
     }
   }
   render() {
+
+    let page = '';
+    switch(this.state.activePage) {
+      case 'contacts' :
+        page = <Contacts userId={this.state.userId} token={this.state.token}/> ;
+      break;
+      case 'add_contact' :
+        page = <AddContact userId={this.state.userId} token={this.state.token}/>;
+      break;
+    }    
+     
     return (
       <div>
         <nav className="navbar navbar-expand-lg navbar-light bg-light">
@@ -185,8 +284,8 @@ class Panel extends Component {
                   Contacts
                 </a>
                 <div className="dropdown-menu" aria-labelledby="navbarDropdown">
-                  <a className="dropdown-item" style={{cursor:'pointer'}}  >View contacts</a>
-                  <a className="dropdown-item" style={{cursor:'pointer'}}  >New contact</a>                  
+                  <a className="dropdown-item" style={{cursor:'pointer'}} onClick={evt=> this.activateContacts()}  >View contacts</a>
+                  <a className="dropdown-item" style={{cursor:'pointer'}} onClick={evt=> this.activateAddContact()} >New contact</a>                  
                 </div>
               </li>
               <li className="nav-item dropdown">
@@ -208,8 +307,8 @@ class Panel extends Component {
             </form>
           </div>
         </nav>
-        <div>          
-          <Contacts userId={this.state.userId} token={this.state.token}/>         
+        <div>
+        { page }                
         </div>
       </div>
     )
