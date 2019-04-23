@@ -85,9 +85,13 @@ class Contacts extends Component {
     this.state = {
       userId : props.userId,
       token : props.token,
-      contacts : []
+      contacts : []  ,
+      searchKeyword : null     
     }   
-    this.loadAll = () => {      
+    this.loadAll = () => {   
+      this.setState({
+        searchKeyword : null
+      });
         unirest.get(
           API_URL + 'contacts/'+this.state.userId
         )        
@@ -107,18 +111,55 @@ class Contacts extends Component {
           }
         })
     }
-
     this.refreshContacts = ()=> {
       this.setState({
         contacts : []
-      });
-      this.loadAll();
+      });            
+      this.loadAll();      
     }
-
     this.editContact = (contactId)=> {
       this.props.activateEditContact(contactId);
     }
+
+    this.setSearchKey = (evt)=> {
+      this.setState({ 
+        searchKeyword:evt.target.value
+      });
+     
+      
+    }
+    this.searchContacts = () => {
+      let key = this.state.searchKeyword;
+
+      if(key === null || key ===undefined || key ==='')
+      {
+        this.loadAll();        
+      }
+      else
+      {
+        unirest.get(
+          API_URL + 'contacts/'+this.state.userId+'/'+this.state.searchKeyword
+        )        
+        .headers({                      
+          'api-key' : API_KEY,
+          'userid' : this.state.userId,
+          'token' : this.state.token
+        })       
+        .end( (response) => {                                
+          var responseData = JSON.parse(response.body);               
+          if(responseData.error === true) {
+            alert(responseData.message);
+          } else {  
+            this.setState({
+              contacts : responseData.data.contacts
+            })
+          }
+        })
+      }
+    }
+
     this.loadAll();
+    
   }
   render() {      
     var contactItems = this.state.contacts.map( (contact) => 
@@ -134,28 +175,41 @@ class Contacts extends Component {
     );
     
     return(
-      <div className="row">
-        <div className="col-md-2"></div>
-        <div className="col-md-8">
-          <table className = "table">
-          <thead>
-            <tr>
-              <th>Surname</th>
-              <th>Name</th>
-              <th>Phone</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>            
-            {contactItems}
-            </tbody>
-          </table>
+      <div>
+        <div className="row" style={{marginTop:"5px" , marginBottom:"5px"}}>
+          <div className="col-md-2"></div>
+          <div className="col-md-3" style={{display:"flex" , alignItems: "center" }}>
+            <label style={{whiteSpace:"nowrap"}} >Enter to search :&nbsp;</label>
+            <input type="text" className="form-control inline"  value = {this.state.searchKeyword || ''} onChange={evt => this.setSearchKey(evt)} ></input>
+            <button style={{marginLeft:"5px"}} className="btn btn-primary" onClick={evt => this.searchContacts()}>Search</button>
+            <button style={{marginLeft:"5px"}} className="btn btn-success" onClick={evt =>this.loadAll()}>X</button>
+          </div>
+          <div className="col-md-7"></div>
         </div>
-        <div className="col-md-2"></div>
-      </div> 
+        <div className="row">
+          <div className="col-md-2"></div>
+          <div className="col-md-8">            
+            <table className = "table">
+            <thead>
+              <tr>
+                <th>Surname</th>
+                <th>Name</th>
+                <th>Phone</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>            
+              {contactItems}
+              </tbody>
+            </table>
+          </div>
+          <div className="col-md-2"></div>
+        </div> 
+      </div>
     );
   }  
 }
+
 class AddContact extends Component {
   constructor(props) {
     super(props);  
@@ -406,7 +460,9 @@ class Panel extends Component {
       token : props.token,
 
       activePage : 'contacts' ,
-      contactForEdit : null
+      contactForEdit : null ,
+
+      searchKey : null
     }
 
     this.activateContacts = () => {
@@ -414,7 +470,7 @@ class Panel extends Component {
         activePage : 'contacts' ,
         contactForEdit : null
       });
-    }
+    }  
     this.activateAddContact = () => {
       this.setState({
         activePage : 'add_contact',
@@ -427,7 +483,7 @@ class Panel extends Component {
         contactForEdit : contactId
       });
     }
-    
+ 
     this.logout = () => {
         unirest.get(
           API_URL + 'logout/'
@@ -494,11 +550,7 @@ class Panel extends Component {
               <li className="nav-item">
                 <a className="nav-link" style={{cursor:'pointer'}} onClick={this.logout}>Logout</a>
               </li>
-            </ul>
-            <form className="form-inline my-2 my-lg-0">
-              <input className="form-control mr-sm-2" type="search" placeholder="Search" aria-label="Search"></input>
-              <button className="btn btn-outline-success my-2 my-sm-0" type="submit">Search</button>
-            </form>
+            </ul>            
           </div>
         </nav>
         <div>
