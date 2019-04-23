@@ -35,8 +35,8 @@ class Login extends Component {
             if(responseData.error === true) {
               alert(responseData.message);
             } else {
-              if(responseData.data.token !== undefined) {                  
-                  props.setLoginData(responseData.data.userId,this.state.userName,responseData.data.token,true);
+              if(responseData.data.token !== undefined) {  
+                  props.setLoginData(responseData.data.userId, responseData.data.isAdmin == '1' , this.state.userName,responseData.data.token,true);
               }
             }
           })
@@ -846,12 +846,14 @@ class Panel extends Component {
       userId : props.userId,
       token : props.token,
 
+      isAdmin : this.props.isAdmin,
+
       activePage : 'contacts' ,
       contactForEdit : null ,
       userForEdit : null,
 
       searchKey : null
-    }
+    } 
 
     this.activateContacts = () => {
       this.setState({
@@ -916,7 +918,10 @@ class Panel extends Component {
           }
         })
     }
+
+   
   }
+
   render() {
 
     let page = '';
@@ -940,7 +945,19 @@ class Panel extends Component {
       page = <EditUser userId={this.state.userId} token={this.state.token} userForEdit={this.state.userForEdit} showUsers={this.activateUsers}/>;
     break;
     }    
-     
+    let usersMenu = '';
+    if(this.state.isAdmin) {
+      usersMenu = 
+      <li className="nav-item dropdown">
+        <a className="nav-link dropdown-toggle" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style={{cursor:'pointer'}} >
+          Users
+        </a>
+        <div className="dropdown-menu" aria-labelledby="navbarDropdown">
+          <a className="dropdown-item" style={{cursor:'pointer'}} onClick={evt=> this.activateUsers()}  >View users</a>
+          <a className="dropdown-item" style={{cursor:'pointer'}} onClick={evt=> this.activateAddUser()} >New user</a>                  
+        </div>
+      </li> ;
+    }
     return (
       <div>
         <nav className="navbar navbar-expand-lg navbar-light bg-light">
@@ -960,15 +977,7 @@ class Panel extends Component {
                   <a className="dropdown-item" style={{cursor:'pointer'}} onClick={evt=> this.activateAddContact()} >New contact</a>                  
                 </div>
               </li>
-              <li className="nav-item dropdown">
-                <a className="nav-link dropdown-toggle" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style={{cursor:'pointer'}} >
-                  Users
-                </a>
-                <div className="dropdown-menu" aria-labelledby="navbarDropdown">
-                  <a className="dropdown-item" style={{cursor:'pointer'}} onClick={evt=> this.activateUsers()}  >View users</a>
-                  <a className="dropdown-item" style={{cursor:'pointer'}} onClick={evt=> this.activateAddUser()} >New user</a>                  
-                </div>
-              </li>              
+              { usersMenu }      
               <li className="nav-item">
                 <a className="nav-link" style={{cursor:'pointer'}} onClick={this.logout}>Logout</a>
               </li>
@@ -988,6 +997,7 @@ class App extends Component {
     super(props);
     this.state = {
       userId : null,
+      isAdmin : false,
       userName : null,
       accessToken : null,
     }
@@ -996,15 +1006,17 @@ class App extends Component {
       return this.state.userId != null && this.state.accessToken != null;
     }
 
-    this.setLoginData = (userId,userName,token,loggedIn)=> {
+    this.setLoginData = (userId,isAdmin , userName,token,loggedIn)=> {
       if(loggedIn) {
         this.setState({
           userId : userId,
+          isAdmin : isAdmin,
           userName : userName,
           accessToken : token,        
         });
 
         localStorage.setItem('userId' , userId);
+        localStorage.setItem('isAdmin' , isAdmin);
         localStorage.setItem('userName' , userName);
         localStorage.setItem('accessToken' , token);
       }
@@ -1013,10 +1025,12 @@ class App extends Component {
     this.removeLoginData = () => {
       this.setState({
         userId : null,
+        isAdmin : false,
         userName : null,
         accessToken : null,        
       });
       localStorage.removeItem('userId');
+      localStorage.removeItem('isAdmin');
       localStorage.removeItem('userName');
       localStorage.removeItem('accessToken');
     }
@@ -1029,6 +1043,7 @@ class App extends Component {
         });
 
         localStorage.removeItem('userId');
+        localStorage.removeItem('isAdmin');
         localStorage.removeItem('userName');
         localStorage.removeItem('accessToken');
     }
@@ -1036,6 +1051,7 @@ class App extends Component {
     this.loadLocalStorage = () => {
         this.setState({
           userId: localStorage.getItem('userId'),
+          isAdmin : localStorage.getItem('isAdmin'),
           userName : localStorage.getItem('userName'),
           accessToken : localStorage.getItem('accessToken')
         });
@@ -1057,7 +1073,7 @@ class App extends Component {
     else {
       return (
         <div className="App">
-            <Panel userId={this.state.userId} token={this.state.accessToken} removeLoginData={this.removeLoginData} logout={this.logout}/>
+            <Panel userId={this.state.userId} isAdmin={this.state.isAdmin} token={this.state.accessToken} removeLoginData={this.removeLoginData} logout={this.logout}/>
         </div>
       )
     }
