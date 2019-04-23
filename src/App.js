@@ -115,6 +115,9 @@ class Contacts extends Component {
       this.loadAll();
     }
 
+    this.editContact = (contactId)=> {
+      this.props.activateEditContact(contactId);
+    }
     this.loadAll();
   }
   render() {      
@@ -123,7 +126,10 @@ class Contacts extends Component {
         <td>{contact.surname}</td>
         <td>{contact.name}</td>
         <td>{contact.phone}</td>
-        <td><DeleteContact userId={this.state.userId} token={this.state.token} contactId={contact.contact_id} refreshContacts={this.refreshContacts}/></td>
+        <td>
+          <EditContactButton userId={this.state.userId} token={this.state.token} contactId={contact.contact_id} editContact={this.editContact}/>
+          <DeleteContactButton userId={this.state.userId} token={this.state.token} contactId={contact.contact_id} refreshContacts={this.refreshContacts}/>
+        </td>
       </tr>
     );
     
@@ -151,7 +157,6 @@ class Contacts extends Component {
   }  
 }
 class AddContact extends Component {
-
   constructor(props) {
     super(props);  
     this.state = {
@@ -198,6 +203,10 @@ class AddContact extends Component {
         }
       })
     }
+
+    this.showContacts = () => {
+      this.props.showContacts();
+    }
   }
   render() {      
     return(
@@ -217,7 +226,10 @@ class AddContact extends Component {
             <label htmlFor="phone">Phone :</label>
             <input type="phone" className="form-control" id="phone"  onChange={evt => this.setPhone(evt)}></input>
           </div>
-          <button type="button" className="btn btn-primary" onClick={evt=> this.createContact()}>Create</button>
+          <div className="form-group">
+            <button type="button" className="btn btn-primary" onClick={evt=> this.createContact()}>Create</button>
+            <button style={{marginLeft: "5px"}} type="button" className="btn btn-warning" onClick={evt=> this.showContacts()}>Go back</button>   
+          </div>
         </form> 
         </div>
         <div className="col-md-2"></div>
@@ -225,7 +237,7 @@ class AddContact extends Component {
     );
   } 
 }
-class DeleteContact extends Component {
+class DeleteContactButton extends Component {
   
   constructor(props) {
     super(props);  
@@ -262,6 +274,130 @@ class DeleteContact extends Component {
     );
   } 
 }
+class EditContactButton extends Component {
+  constructor(props) {
+    super(props);  
+    this.state = {
+      userId : props.userId,
+      token : props.token,            
+      contactId : props.contactId      
+    }        
+  }
+  render() {      
+    return(
+      <div style={{cursor:'pointer' , marginRight:'5px'}} className="btn btn-sm btn-primary" onClick={evt=> this.props.editContact(this.state.contactId)}>Edit</div>      
+    );
+  } 
+}
+class EditContact extends Component {
+  constructor(props) {
+    super(props);  
+    this.state = {
+      userId : props.userId,
+      token : props.token,
+          
+      contactId : this.props.contactId,
+      surname : null,
+      name : null,
+      phone : null,
+      saved: null
+    }      
+
+    this.loadContact = () => {      
+      unirest.get(
+        API_URL + 'contacts/'+this.state.userId+'/'+this.state.contactId
+      )        
+      .headers({                      
+        'api-key' : API_KEY,
+        'userid' : this.state.userId,
+        'token' : this.state.token
+      })       
+      .end( (response) => {                                        
+        var responseData = JSON.parse(response.body);               
+        if(responseData.error === true) {
+          alert(responseData.message);
+        } else {  
+          var contact = responseData.data[0];
+          this.setState({
+            surname : contact.surname,
+            name : contact.name,
+            phone : contact.phone
+          })                 
+        }
+      })
+    }
+    
+    this.setSurname = (evt) => {
+      this.setState ({ surname: evt.target.value , saved: null});
+    }
+    this.setName = (evt) => {
+      this.setState ({ name: evt.target.value , saved: null});
+    }
+    this.setPhone = (evt) => {
+      this.setState ({ phone: evt.target.value , saved: null});
+    }
+
+    this.updateContact = () => {      
+      unirest.put(
+        API_URL + 'contacts/'+this.state.contactId
+      )        
+      .headers({                      
+        'api-key' : API_KEY,
+        'userid' : this.state.userId,
+        'token' : this.state.token
+      })     
+      .field('surname', this.state.surname)
+      .field('name' , this.state.name)                
+      .field('phone' , this.state.phone)            
+      .end( (response) => {                        
+        var responseData = JSON.parse(response.body);               
+        if(responseData.error === true) {
+          alert(responseData.message);
+        } else {
+          this.setState({
+            saved: 'Succesfully saved'
+          });                    
+        }
+      })
+    }
+
+    this.showContacts = () => {
+      this.props.showContacts();
+    }
+    this.loadContact();    
+  }
+  render() {      
+    return(
+      <div className="row">
+        <div className="col-md-2"></div>
+        <div className="col-md-4">
+        <form>
+          <div className="form-group">
+            <label htmlFor="surname">Surname :</label>
+            <input value={this.state.surname} type="surname" className="form-control" id="surname" onChange={evt => this.setSurname(evt)}></input>
+          </div>
+          <div className="form-group">
+            <label htmlFor="name">Name :</label>
+            <input value={this.state.name} type="name" className="form-control" id="name"  onChange={evt => this.setName(evt)}></input>
+          </div>
+          <div className="form-group">
+            <label htmlFor="phone">Phone :</label>
+            <input value={this.state.phone} type="phone" className="form-control" id="phone"  onChange={evt => this.setPhone(evt)}></input>
+          </div>
+          <div className="form-group">
+          <button type="button" className="btn btn-primary" onClick={evt=> this.updateContact()}>Save</button>          
+          <button style={{marginLeft: "5px"}} type="button" className="btn btn-warning" onClick={evt=> this.showContacts()}>Go back</button>          
+          </div>
+          <div className="form-group">
+            <label style={{color: "green"}}>{this.state.saved}</label>          
+          </div>          
+        </form> 
+        </div>
+        <div className="col-md-2"></div>
+      </div> 
+    );
+  } 
+}
 class Panel extends Component {
   constructor(props) {
     super(props);  
@@ -269,17 +405,26 @@ class Panel extends Component {
       userId : props.userId,
       token : props.token,
 
-      activePage : 'contacts'
+      activePage : 'contacts' ,
+      contactForEdit : null
     }
 
     this.activateContacts = () => {
       this.setState({
-        activePage : 'contacts'
+        activePage : 'contacts' ,
+        contactForEdit : null
       });
     }
     this.activateAddContact = () => {
       this.setState({
-        activePage : 'add_contact'
+        activePage : 'add_contact',
+        contactForEdit : null
+      });
+    }
+    this.activateEditContact = (contactId) => {      
+      this.setState({
+        activePage : 'edit_contact',
+        contactForEdit : contactId
       });
     }
     
@@ -308,10 +453,13 @@ class Panel extends Component {
     let page = '';
     switch(this.state.activePage) {
       case 'contacts' :
-        page = <Contacts userId={this.state.userId} token={this.state.token}/> ;
+        page = <Contacts userId={this.state.userId} token={this.state.token} activateEditContact={this.activateEditContact}/> ;
       break;
       case 'add_contact' :
-        page = <AddContact userId={this.state.userId} token={this.state.token}/>;
+        page = <AddContact userId={this.state.userId} token={this.state.token} showContacts={this.activateContacts}/>;
+      break;
+      case 'edit_contact' :
+        page = <EditContact userId={this.state.userId} token={this.state.token} contactId={this.state.contactForEdit} showContacts={this.activateContacts}/>;
       break;
     }    
      
