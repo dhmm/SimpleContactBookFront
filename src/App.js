@@ -179,6 +179,13 @@ class Contacts extends Component {
         <div className="row" style={{marginTop:"5px" , marginBottom:"5px"}}>
           <div className="col-md-2"></div>
           <div className="col-md-3" style={{display:"flex" , alignItems: "center" }}>
+            <h3>Contacts</h3>
+          </div>
+          <div className="col-md-7"></div>
+        </div>
+        <div className="row" style={{marginTop:"5px" , marginBottom:"5px"}}>
+          <div className="col-md-2"></div>
+          <div className="col-md-3" style={{display:"flex" , alignItems: "center" }}>
             <label style={{whiteSpace:"nowrap"}} >Enter to search :&nbsp;</label>            
             <input type="text" className="form-control inline"  value = {this.state.searchKeyword || ''} onChange={evt => this.setSearchKey(evt)} ></input>
             <button style={{marginLeft:"5px"}} className="btn btn-primary" onClick={evt => this.searchContacts()}>Search</button>
@@ -551,6 +558,13 @@ class Users extends Component {
     
     return(
       <div>
+        <div className="row" style={{marginTop:"5px" , marginBottom:"5px"}}>
+          <div className="col-md-2"></div>
+          <div className="col-md-3" style={{display:"flex" , alignItems: "center" }}>
+            <h3>Users</h3>
+          </div>
+          <div className="col-md-7"></div>
+        </div>
         <div className="row" style={{marginTop:"5px" , marginBottom:"5px"}}>
           <div className="col-md-2"></div>
           <div className="col-md-3" style={{display:"flex" , alignItems: "center" }}>
