@@ -556,7 +556,7 @@ class Users extends Component {
           <div className="col-md-3" style={{display:"flex" , alignItems: "center" }}>
             <label style={{whiteSpace:"nowrap"}} >Enter to search :&nbsp;</label>            
             <input type="text" className="form-control inline"  value = {this.state.searchKeyword || ''} onChange={evt => this.setSearchKey(evt)} ></input>
-            <button style={{marginLeft:"5px"}} className="btn btn-primary" onClick={evt => this.searchContacts()}>Search</button>
+            <button style={{marginLeft:"5px"}} className="btn btn-primary" onClick={evt => this.searchUsers()}>Search</button>
             <button style={{marginLeft:"5px"}} className="btn btn-success" onClick={evt =>this.loadAll()}>X</button>
           </div>
           <div className="col-md-7"></div>
