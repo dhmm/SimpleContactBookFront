@@ -544,7 +544,7 @@ class Users extends Component {
         <td>{user.is_admin}</td>
         <td>
           <EditUserButton userId={this.state.userId} token={this.state.token} userId={user.user_id} editUser={this.editUser}/>
-          <DeleteUserButton userId={this.state.userId} token={this.state.token} userId={user.user_id} refreshUsers={this.refreshUsers}/>
+          <DeleteUserButton userId={this.state.userId} token={this.state.token} userId={this.state.userId} userToDeleteId={user.user_id} refreshUsers={this.refreshUsers}/>
         </td>
       </tr>
     );
@@ -591,13 +591,13 @@ class DeleteUserButton extends Component {
     this.state = {
       userId : props.userId,
       token : props.token,            
-      userId : props.userId,      
+      userToDeleteId : props.userToDeleteId,      
     }  
   
     this.deleteUser = () => {          
       if(window.confirm('Are you sure ')) {     
         unirest.delete(
-          API_URL + 'users/'+this.state.userId
+          API_URL + 'users/'+this.state.userToDeleteId
         )        
         .headers({                      
           'api-key' : API_KEY,
@@ -717,7 +717,115 @@ class AddUser extends Component {
     );
   } 
 }
+class EditUser extends Component {
+  constructor(props) {
+    super(props);  
+    this.state = {
+      userId : props.userId,
+      token : props.token,
+          
+      userForEdit : this.props.userForEdit,
+      username : null,
+      password : null,
+      admin : null,
+      saved: null
+    }      
 
+    this.loadUser = () => {        
+      unirest.get(
+        API_URL + 'users/'+this.state.userForEdit
+      )        
+      .headers({                      
+        'api-key' : API_KEY,
+        'userid' : this.state.userId,
+        'token' : this.state.token
+      })       
+      .end( (response) => {                                        
+        var responseData = JSON.parse(response.body);               
+        if(responseData.error === true) {
+          alert(responseData.message);
+        } else {  
+          var user = responseData.data[0];
+          this.setState({
+            username : user.username,
+            password : user.password,
+            admin : user.is_admin
+          })                 
+        }
+      })
+    }
+    
+    this.setUsername = (evt) => {
+      this.setState ({ username: evt.target.value , saved: null});
+    }
+    this.setPassword = (evt) => {
+      this.setState ({ password: evt.target.value , saved: null});
+    }
+    this.setAdmin = (evt) => {
+      this.setState ({ admin: evt.target.value , saved: null});
+    }
+
+    this.updateUser = () => {      
+      unirest.put(
+        API_URL + 'users/'+this.state.userForEdit
+      )        
+      .headers({                      
+        'api-key' : API_KEY,
+        'userid' : this.state.userId,
+        'token' : this.state.token
+      })     
+      .field('username', this.state.username)
+      .field('password' , this.state.password)                
+      .field('admin' , this.state.admin)            
+      .end( (response) => {                        
+        var responseData = JSON.parse(response.body);               
+        if(responseData.error === true) {
+          alert(responseData.message);
+        } else {
+          this.setState({
+            saved: 'Succesfully saved'
+          });                    
+        }
+      })
+    }
+
+    this.showUsers = () => {
+      this.props.showUsers();
+    }
+    this.loadUser();    
+  }
+  render() {      
+    return(
+      <div className="row">
+        <div className="col-md-2"></div>
+        <div className="col-md-4">
+        <form>
+          <div className="form-group">
+            <label htmlFor="surname">Username :</label>
+            <input value={this.state.username} type="surname" className="form-control" id="surname" onChange={evt => this.setUsername(evt)}></input>
+          </div>
+          <div className="form-group">
+            <label htmlFor="name">Password :</label>
+            <input value={this.state.password} type="name" className="form-control" id="name"  onChange={evt => this.setPassword(evt)}></input>
+          </div>
+          <div className="form-group">
+            <label htmlFor="phone">Admin :</label>
+            <input value={this.state.admin} type="phone" className="form-control" id="phone"  onChange={evt => this.setAdmin(evt)}></input>
+          </div>
+          <div className="form-group">
+          <button type="button" className="btn btn-primary" onClick={evt=> this.updateUser()}>Save</button>          
+          <button style={{marginLeft: "5px"}} type="button" className="btn btn-warning" onClick={evt=> this.showUsers()}>Go back</button>          
+          </div>
+          <div className="form-group">
+            <label style={{color: "green"}}>{this.state.saved}</label>          
+          </div>          
+        </form> 
+        </div>
+        <div className="col-md-2"></div>
+      </div> 
+    );
+  } 
+}
 class Panel extends Component {
   constructor(props) {
     super(props);  
@@ -727,6 +835,7 @@ class Panel extends Component {
 
       activePage : 'contacts' ,
       contactForEdit : null ,
+      userForEdit : null,
 
       searchKey : null
     }
@@ -734,34 +843,46 @@ class Panel extends Component {
     this.activateContacts = () => {
       this.setState({
         activePage : 'contacts' ,
-        contactForEdit : null
+        contactForEdit : null ,
+        userForEdit : null
       });
     }  
     this.activateAddContact = () => {
       this.setState({
         activePage : 'add_contact',
-        contactForEdit : null
+        contactForEdit : null,
+        userForEdit : null
       });
     }
     this.activateEditContact = (contactId) => {      
       this.setState({
         activePage : 'edit_contact',
-        contactForEdit : contactId
+        contactForEdit : contactId,
+        userForEdit : null
       });
     }
     this.activateUsers = () => {
       this.setState({
         activePage: 'users',
-        contactForEdit: null
+        contactForEdit: null,
+        userForEdit : null
       });
     }
     this.activateAddUser = () => {
       this.setState({
         activePage : 'add_user',
-        contactForEdit : null
+        contactForEdit : null,
+        userForEdit : null
       });
     }
-    this.activateEditUser = null;
+    this.activateEditUser = (userForEdit) => {
+      this.setState({
+        activePage : 'edit_user',
+        contactForEdit : null,
+        userForEdit : userForEdit
+      });
+    };
+
 
     this.logout = () => {
         unirest.get(
@@ -802,6 +923,9 @@ class Panel extends Component {
       case 'add_user' :
         page = <AddUser userId={this.state.userId} token={this.state.token} showUsers={this.activateUsers}/> ;
       break;
+      case 'edit_user' :
+      page = <EditUser userId={this.state.userId} token={this.state.token} userForEdit={this.state.userForEdit} showUsers={this.activateUsers}/>;
+    break;
     }    
      
     return (
