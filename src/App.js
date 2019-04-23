@@ -227,16 +227,18 @@ class AddContact extends Component {
       surname : null,
       name : null,
       phone : null,
+
+      created : null
     }  
     
     this.setSurname = (evt) => {
-      this.setState ({ surname: evt.target.value });
+      this.setState ({ surname: evt.target.value , created:null });
     }
     this.setName = (evt) => {
-      this.setState ({ name: evt.target.value });
+      this.setState ({ name: evt.target.value , created:null });
     }
     this.setPhone = (evt) => {
-      this.setState ({ phone: evt.target.value });
+      this.setState ({ phone: evt.target.value  , created:null});
     }
 
     this.createContact = () => {      
@@ -259,7 +261,8 @@ class AddContact extends Component {
           this.setState({
             surname: null,
             name:null,
-            phone:null
+            phone:null,
+            created: 'Created succesfully'
           });          
         }
       })
@@ -290,6 +293,9 @@ class AddContact extends Component {
           <div className="form-group">
             <button type="button" className="btn btn-primary" onClick={evt=> this.createContact()}>Create</button>
             <button style={{marginLeft: "5px"}} type="button" className="btn btn-warning" onClick={evt=> this.showContacts()}>Go back</button>   
+          </div>
+          <div className="form-group">
+            <label style={{color:"green"}}>{this.state.created}</label>  
           </div>
         </form> 
         </div>
@@ -659,16 +665,18 @@ class AddUser extends Component {
       username : null,
       password : null,
       admin : null,
+
+      created : null
     }  
     
     this.setUserName = (evt) => {
-      this.setState ({ username: evt.target.value });
+      this.setState ({ username: evt.target.value , created:null });
     }
     this.setPassword = (evt) => {
-      this.setState ({ password: evt.target.value });
+      this.setState ({ password: evt.target.value , created:null});
     }
     this.setAdmin = (evt) => {
-      this.setState ({ admin: evt.target.value });
+      this.setState ({ admin: evt.target.value , created:null});
     }
 
     this.createUser = () => {      
@@ -691,7 +699,8 @@ class AddUser extends Component {
           this.setState({
             username: null,
             password:null,
-            admin:null
+            admin:null, 
+            created:'Created succesfully'
           });          
         }
       })
@@ -722,6 +731,9 @@ class AddUser extends Component {
           <div className="form-group">
             <button type="button" className="btn btn-primary" onClick={evt=> this.createUser()}>Create</button>
             <button style={{marginLeft: "5px"}} type="button" className="btn btn-warning" onClick={evt=> this.showUsers()}>Go back</button>   
+          </div>
+          <div className="form-group">
+            <label style={{color:"green"}}>{this.state.created}</label>
           </div>
         </form> 
         </div>
