@@ -137,7 +137,7 @@ class Contacts extends Component {
       }
       else
       {
-        unirest.get(
+        unirest.post(
           API_URL + 'contacts/'+this.state.userId+'/'+this.state.searchKeyword
         )        
         .headers({                      
@@ -179,7 +179,7 @@ class Contacts extends Component {
         <div className="row" style={{marginTop:"5px" , marginBottom:"5px"}}>
           <div className="col-md-2"></div>
           <div className="col-md-3" style={{display:"flex" , alignItems: "center" }}>
-            <label style={{whiteSpace:"nowrap"}} >Enter to search :&nbsp;</label>
+            <label style={{whiteSpace:"nowrap"}} >Enter to search :&nbsp;</label>            
             <input type="text" className="form-control inline"  value = {this.state.searchKeyword || ''} onChange={evt => this.setSearchKey(evt)} ></input>
             <button style={{marginLeft:"5px"}} className="btn btn-primary" onClick={evt => this.searchContacts()}>Search</button>
             <button style={{marginLeft:"5px"}} className="btn btn-success" onClick={evt =>this.loadAll()}>X</button>
@@ -357,7 +357,7 @@ class EditContact extends Component {
       saved: null
     }      
 
-    this.loadContact = () => {      
+    this.loadContact = () => {        
       unirest.get(
         API_URL + 'contacts/'+this.state.userId+'/'+this.state.contactId
       )        
