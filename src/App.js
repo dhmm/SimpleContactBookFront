@@ -452,6 +452,272 @@ class EditContact extends Component {
     );
   } 
 }
+
+class Users extends Component {
+  constructor(props) {
+    super(props);  
+    this.state = {
+      userId : props.userId,
+      token : props.token,
+      users : []  ,
+      searchKeyword : null     
+    }   
+    this.loadAll = () => {   
+      this.setState({
+        searchKeyword : null
+      });
+        unirest.get(
+          API_URL + 'users/'
+        )        
+        .headers({                      
+          'api-key' : API_KEY,
+          'userid' : this.state.userId,
+          'token' : this.state.token
+        })       
+        .end( (response) => {                                
+          var responseData = JSON.parse(response.body);               
+          if(responseData.error === true) {
+            alert(responseData.message);
+          } else {  
+            this.setState({
+              users : responseData.data.users
+            })
+          }
+        })
+    }
+    this.refreshUsers= ()=> {
+      this.setState({
+        users : []
+      });            
+      this.loadAll();      
+    }
+    this.editUser = (userId)=> {
+      this.props.activateEditUser(userId);
+    }
+
+    this.setSearchKey = (evt)=> {
+      this.setState({ 
+        searchKeyword:evt.target.value
+      });
+     
+      
+    }
+    this.searchUsers = () => {
+      let key = this.state.searchKeyword;
+
+      if(key === null || key ===undefined || key ==='')
+      {
+        this.loadAll();        
+      }
+      else
+      {
+        unirest.post(
+          API_URL + 'users/'+this.state.searchKeyword
+        )        
+        .headers({                      
+          'api-key' : API_KEY,
+          'userid' : this.state.userId,
+          'token' : this.state.token
+        })       
+        .end( (response) => {                                
+          var responseData = JSON.parse(response.body);               
+          if(responseData.error === true) {
+            alert(responseData.message);
+          } else {  
+            this.setState({
+              users : responseData.data.users
+            })
+          }
+        })
+      }
+    }
+
+    this.loadAll();
+    
+  }
+
+  render() {      
+    var userItems = this.state.users.map( (user) => 
+      <tr>
+        <td>{user.username}</td>
+        <td>{user.password}</td>
+        <td>{user.is_admin}</td>
+        <td>
+          <EditUserButton userId={this.state.userId} token={this.state.token} userId={user.user_id} editUser={this.editUser}/>
+          <DeleteUserButton userId={this.state.userId} token={this.state.token} userId={user.user_id} refreshUsers={this.refreshUsers}/>
+        </td>
+      </tr>
+    );
+    
+    return(
+      <div>
+        <div className="row" style={{marginTop:"5px" , marginBottom:"5px"}}>
+          <div className="col-md-2"></div>
+          <div className="col-md-3" style={{display:"flex" , alignItems: "center" }}>
+            <label style={{whiteSpace:"nowrap"}} >Enter to search :&nbsp;</label>            
+            <input type="text" className="form-control inline"  value = {this.state.searchKeyword || ''} onChange={evt => this.setSearchKey(evt)} ></input>
+            <button style={{marginLeft:"5px"}} className="btn btn-primary" onClick={evt => this.searchContacts()}>Search</button>
+            <button style={{marginLeft:"5px"}} className="btn btn-success" onClick={evt =>this.loadAll()}>X</button>
+          </div>
+          <div className="col-md-7"></div>
+        </div>
+        <div className="row">
+          <div className="col-md-2"></div>
+          <div className="col-md-8">            
+            <table className = "table">
+            <thead>
+              <tr>
+                <th>Username</th>
+                <th>Password</th> 
+                <th>Admin</th>               
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>            
+              {userItems}
+              </tbody>
+            </table>
+          </div>
+          <div className="col-md-2"></div>
+        </div> 
+      </div>
+    );
+  }  
+}
+class DeleteUserButton extends Component {
+  
+  constructor(props) {
+    super(props);  
+    this.state = {
+      userId : props.userId,
+      token : props.token,            
+      userId : props.userId,      
+    }  
+  
+    this.deleteUser = () => {          
+      if(window.confirm('Are you sure ')) {     
+        unirest.delete(
+          API_URL + 'users/'+this.state.userId
+        )        
+        .headers({                      
+          'api-key' : API_KEY,
+          'userid' : this.state.userId,
+          'token' : this.state.token
+        })              
+        .end( (response) => {                        
+          var responseData = JSON.parse(response.body);               
+          if(responseData.error === true) {
+            alert(responseData.message);
+          } else {
+            this.props.refreshUsers();
+          }
+        })
+      }
+    }
+  }
+  render() {      
+    return(
+      <div style={{cursor:'pointer'}} className="btn btn-sm btn-danger" onClick={evt=> this.deleteUser()}>Delete</div>      
+    );
+  } 
+}
+class EditUserButton extends Component {
+  constructor(props) {
+    super(props);  
+    this.state = {
+      userId : props.userId,
+      token : props.token,            
+      userId : props.userId      
+    }        
+  }
+  render() {      
+    return(
+      <div style={{cursor:'pointer' , marginRight:'5px'}} className="btn btn-sm btn-primary" onClick={evt=> this.props.editUser(this.state.userId)}>Edit</div>      
+    );
+  } 
+}
+class AddUser extends Component {
+  constructor(props) {
+    super(props);  
+    this.state = {
+      userId : props.userId,
+      token : props.token,
+            
+      username : null,
+      password : null,
+      admin : null,
+    }  
+    
+    this.setUserName = (evt) => {
+      this.setState ({ username: evt.target.value });
+    }
+    this.setPassword = (evt) => {
+      this.setState ({ password: evt.target.value });
+    }
+    this.setAdmin = (evt) => {
+      this.setState ({ admin: evt.target.value });
+    }
+
+    this.createUser = () => {      
+      unirest.post(
+        API_URL + 'users/'
+      )        
+      .headers({                      
+        'api-key' : API_KEY,
+        'userid' : this.state.userId,
+        'token' : this.state.token
+      })     
+      .field('username', this.state.username)
+      .field('password' , this.state.password)                
+      .field('admin' , this.state.admin)            
+      .end( (response) => {                        
+        var responseData = JSON.parse(response.body);               
+        if(responseData.error === true) {
+          alert(responseData.message);
+        } else {
+          this.setState({
+            username: null,
+            password:null,
+            admin:null
+          });          
+        }
+      })
+    }
+
+    this.showUsers = () => {
+      this.props.showUsers();
+    }
+  }
+  render() {      
+    return(
+      <div className="row">
+        <div className="col-md-2"></div>
+        <div className="col-md-4">
+        <form>
+          <div className="form-group">
+            <label htmlFor="surname">Username :</label>
+            <input type="surname" className="form-control" id="username" onChange={evt => this.setUserName(evt)}></input>
+          </div>
+          <div className="form-group">
+            <label htmlFor="name">Password :</label>
+            <input type="name" className="form-control" id="password"  onChange={evt => this.setPassword(evt)}></input>
+          </div>
+          <div className="form-group">
+            <label htmlFor="phone">Admin :</label>
+            <input type="phone" className="form-control" id="admin"  onChange={evt => this.setAdmin(evt)}></input>
+          </div>
+          <div className="form-group">
+            <button type="button" className="btn btn-primary" onClick={evt=> this.createUser()}>Create</button>
+            <button style={{marginLeft: "5px"}} type="button" className="btn btn-warning" onClick={evt=> this.showUsers()}>Go back</button>   
+          </div>
+        </form> 
+        </div>
+        <div className="col-md-2"></div>
+      </div> 
+    );
+  } 
+}
+
 class Panel extends Component {
   constructor(props) {
     super(props);  
@@ -483,7 +749,20 @@ class Panel extends Component {
         contactForEdit : contactId
       });
     }
- 
+    this.activateUsers = () => {
+      this.setState({
+        activePage: 'users',
+        contactForEdit: null
+      });
+    }
+    this.activateAddUser = () => {
+      this.setState({
+        activePage : 'add_user',
+        contactForEdit : null
+      });
+    }
+    this.activateEditUser = null;
+
     this.logout = () => {
         unirest.get(
           API_URL + 'logout/'
@@ -517,6 +796,12 @@ class Panel extends Component {
       case 'edit_contact' :
         page = <EditContact userId={this.state.userId} token={this.state.token} contactId={this.state.contactForEdit} showContacts={this.activateContacts}/>;
       break;
+      case 'users' :
+        page = <Users userId={this.state.userId} token={this.state.token} activateEditUser={this.activateEditUser}/> ;
+      break;
+      case 'add_user' :
+        page = <AddUser userId={this.state.userId} token={this.state.token} showUsers={this.activateUsers}/> ;
+      break;
     }    
      
     return (
@@ -543,8 +828,8 @@ class Panel extends Component {
                   Users
                 </a>
                 <div className="dropdown-menu" aria-labelledby="navbarDropdown">
-                  <a className="dropdown-item" style={{cursor:'pointer'}}  >View users</a>
-                  <a className="dropdown-item" style={{cursor:'pointer'}}  >New user</a>                  
+                  <a className="dropdown-item" style={{cursor:'pointer'}} onClick={evt=> this.activateUsers()}  >View users</a>
+                  <a className="dropdown-item" style={{cursor:'pointer'}} onClick={evt=> this.activateAddUser()} >New user</a>                  
                 </div>
               </li>              
               <li className="nav-item">
