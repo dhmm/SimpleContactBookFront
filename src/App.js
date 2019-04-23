@@ -543,8 +543,8 @@ class Users extends Component {
         <td>{user.password}</td>
         <td>{user.is_admin}</td>
         <td>
-          <EditUserButton userId={this.state.userId} token={this.state.token} userId={user.user_id} editUser={this.editUser}/>
-          <DeleteUserButton userId={this.state.userId} token={this.state.token} userId={this.state.userId} userToDeleteId={user.user_id} refreshUsers={this.refreshUsers}/>
+          <EditUserButton userId={this.state.userId} token={this.state.token} editUser={this.editUser}/>
+          <DeleteUserButton userId={this.state.userId} token={this.state.token} userToDeleteId={user.user_id} refreshUsers={this.refreshUsers}/>
         </td>
       </tr>
     );
@@ -604,7 +604,7 @@ class DeleteUserButton extends Component {
           'userid' : this.state.userId,
           'token' : this.state.token
         })              
-        .end( (response) => {                        
+        .end( (response) => {                      
           var responseData = JSON.parse(response.body);               
           if(responseData.error === true) {
             alert(responseData.message);
@@ -626,8 +626,7 @@ class EditUserButton extends Component {
     super(props);  
     this.state = {
       userId : props.userId,
-      token : props.token,            
-      userId : props.userId      
+      token : props.token      
     }        
   }
   render() {      
